@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0f172a; /* slate-900 */
+      --panel: #111827; /* gray-900 */
+      --ink: #0b1020; /* deep ink for text shadows */
+      --card: #ffffff; /* white */
+      --muted: #6b7280; /* gray-500 */
+      --accent: #3b82f6; /* blue-500 */
+      --accent-2: #1d4ed8; /* blue-700 */
+      --good: #16a34a; /* green-600 */
+      --warn: #f59e0b; /* amber-500 */
+      --bad: #ef4444; /* red-500 */
+      --mid: #a855f7; /* violet-500 */
+    }
+    *{ box-sizing: border-box; }
+    html, body{
+      margin:0; padding:0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji';
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      color:#0f172a;
+    }
+    .wrapper{ max-width: 1000px; margin: 0 auto; padding: 32px 16px 80px; }
+    .app-card{
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+    header.hero{ padding: 28px 28px 16px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);}    
+    .title{ font-weight: 800; letter-spacing: .2px; font-size: clamp(20px, 3.2vw, 28px); color:#0b1020; text-align:center; }
+    .subtitle{ text-align:center; color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .intro{ padding: 18px 28px; font-size: 14.5px; line-height: 1.6; color:#111827; background: #fff; }
+    .grid{ display: grid; grid-template-columns: 1fr; gap: 18px; padding: 0 28px 24px; }
+
+    .info-row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 28px; }
+    .field{ display:flex; flex-direction:column; gap:6px; }
+    .field label{ font-size: 13px; color:#374151; font-weight:600; }
+    .field input{ padding: 10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; }
+
+    section.dim{ background:#fff; border:1px solid #eef2f7; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(2,6,23,.05); }
+    section.dim h3{ margin: 0 0 8px; font-size: 18px; color:#0b1020; }
+    .item{ padding: 12px 10px; border-top: 1px dashed #e5e7eb; display:flex; flex-direction:column; gap:10px; }
+    .item:first-of-type{ border-top: none; }
+    .qtext{ font-size: 14.5px; color:#111827; }
+
+    .likert{ display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+    .likert .opt{ display:flex; align-items:center; gap:6px; }
+    .likert input[type="radio"]{ accent-color: var(--accent); width:18px; height:18px; }
+    .likert .lab{ font-size:12.5px; color:#374151; }
+
+    .actions{ display:flex; flex-wrap: wrap; gap:12px; justify-content:center; padding: 18px 28px 26px; border-top:1px solid #e5e7eb; background: linear-gradient(180deg, #f8fafc 0, #eef2ff 100%); }
+    .btn{ border:0; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor:pointer; transition: transform .08s ease, box-shadow .2s; }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn-primary{ background: var(--accent); color:#fff; box-shadow: 0 10px 18px rgba(59,130,246,.22); }
+    .btn-outline{ background: #fff; color: var(--accent-2); border: 2px solid var(--accent-2); }
+    .btn-success{ background: var(--good); color:#fff; }
+    .btn-danger{ background: var(--bad); color:#fff; }
+
+    /* Results */
+    .results{ padding: 24px 28px 36px; background:#fff; border-top:1px solid #e5e7eb; }
+    .results h4{ margin:0 0 10px; font-size: 18px; }
+    .res-grid{ display:grid; grid-template-columns: 1fr; gap: 18px; }
+    .res-card{ border:1px solid #eef2f7; border-radius:14px; padding:16px; display:grid; grid-template-columns: 160px 1fr; gap:16px; align-items:center; }
+    .res-title{ font-weight:800; font-size: 16px; margin:0 0 6px; }
+    .res-score{ font-size: 13px; color:#6b7280; margin-bottom: 8px; }
+    .res-text{ font-size: 14px; color:#0f172a; line-height:1.5; text-align: justify; }
+
+    /* Gauge */
+    .gauge{ width: 160px; height: 100px; position: relative; }
+    .gauge svg{ width: 100%; height: 100%; display:block; }
+    .g-needle{ transform-origin: 80px 80px; transition: transform .6s ease; }
+    .g-label{ font-size:10px; fill:#374151; }
+
+    /* Footer */
+    footer.app-footer{ max-width:1000px; margin:24px auto 32px; color:#e5e7eb; text-align:center; font-size:12.5px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="app-card">
+      <header class="hero">
+        <div class="title">ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação</div>
+        <div class="subtitle">Instrumento clínico de apoio à decisão. Não substitui avaliação terapêutica completa.</div>
+      </header>
+
+      <div class="intro">
+        <strong>Introdução ao Paciente</strong><br>
+        Este é um <em>instrumento clínico estruturado</em>, voltado a pessoas em conflito conjugal, especialmente em contextos de dúvida sobre separação, repetição de traições, dependência ou codependência emocional.
+        <br><br>
+        <strong>Importante:</strong> este inventário <em>não é um teste psicológico com validade diagnóstica registrada</em>. Não deve ser utilizado como <em>único critério</em> para decidir sobre continuidade ou término do relacionamento. Seu objetivo é <strong>auxiliar o autoconhecimento</strong> e <strong>apoiar o direcionamento clínico</strong>, favorecendo reflexões e insights.
+        <br><br>
+        Responda com sinceridade, considerando <strong>como você se sente atualmente</strong> em sua relação. Use a escala de 1 (Discordo totalmente) a 5 (Concordo totalmente).
+      </div>
+
+      <div class="info-row">
+        <div class="field">
+          <label for="name">Nome completo</label>
+          <input id="name" type="text" placeholder="Ex.: Michele Silva" />
+        </div>
+        <div class="field">
+          <label for="age">Idade</label>
+          <input id="age" type="number" min="10" max="120" placeholder="Ex.: 34" />
+        </div>
+        <div class="field">
+          <label for="date">Data de resposta</label>
+          <input id="date" type="date" />
+        </div>
+      </div>
+
+      <div class="grid" id="questionnaire">
+        <!-- Dimensão 1 -->
+        <section class="dim" data-dim="1">
+          <h3>Dimensão 1 – Satisfação Conjugal Atual</h3>
+          <div class="item"><div class="qtext">1. Sinto que meu relacionamento é emocionalmente gratificante.</div><div class="likert" data-q="d1_q1"></div></div>
+          <div class="item"><div class="qtext">2. Ainda me sinto apaixonada(o) pelo meu parceiro.</div><div class="likert" data-q="d1_q2"></div></div>
+          <div class="item"><div class="qtext">3. Há momentos de alegria e conexão genuína entre nós.</div><div class="likert" data-q="d1_q3"></div></div>
+          <div class="item"><div class="qtext">4. Sinto respeito mútuo na relação.</div><div class="likert" data-q="d1_q4"></div></div>
+          <div class="item"><div class="qtext">5. Temos boa comunicação na maior parte do tempo.</div><div class="likert" data-q="d1_q5"></div></div>
+          <div class="item"><div class="qtext">6. Consigo imaginar um futuro feliz ao lado dele(a).</div><div class="likert" data-q="d1_q6"></div></div>
+          <div class="item"><div class="qtext">7. Há carinho e toques físicos que me agradam.</div><div class="likert" data-q="d1_q7"></div></div>
+          <div class="item"><div class="qtext">8. Me sinto valorizada(o) na relação.</div><div class="likert" data-q="d1_q8"></div></div>
+          <div class="item"><div class="qtext">9. A convivência diária é leve e respeitosa.</div><div class="likert" data-q="d1_q9"></div></div>
+          <div class="item"><div class="qtext">10. Enfrentamos problemas com parceria e diálogo.</div><div class="likert" data-q="d1_q10"></div></div>
+        </section>
+
+        <!-- Dimensão 2 -->
+        <section class="dim" data-dim="2">
+          <h3>Dimensão 2 – Ambivalência Decisional</h3>
+          <div class="item"><div class="qtext">11. Me sinto confusa(o) sobre continuar ou sair dessa relação.</div><div class="likert" data-q="d2_q1"></div></div>
+          <div class="item"><div class="qtext">12. Minha decisão muda de um dia para o outro.</div><div class="likert" data-q="d2_q2"></div></div>
+          <div class="item"><div class="qtext">13. Evito pensar profundamente sobre me separar.</div><div class="likert" data-q="d2_q3"></div></div>
+          <div class="item"><div class="qtext">14. Já me imaginei separada(o), mas voltei atrás.</div><div class="likert" data-q="d2_q4"></div></div>
+          <div class="item"><div class="qtext">15. Tenho medo de decidir errado e me arrepender.</div><div class="likert" data-q="d2_q5"></div></div>
+          <div class="item"><div class="qtext">16. Penso frequentemente em separação, mas não ajo.</div><div class="likert" data-q="d2_q6"></div></div>
+          <div class="item"><div class="qtext">17. Oscilo entre esperança e cansaço.</div><div class="likert" data-q="d2_q7"></div></div>
+          <div class="item"><div class="qtext">18. Converso comigo mesma(o) sobre partir, mas adio.</div><div class="likert" data-q="d2_q8"></div></div>
+          <div class="item"><div class="qtext">19. Já ensaiei despedidas em minha mente.</div><div class="likert" data-q="d2_q9"></div></div>
+          <div class="item"><div class="qtext">20. Às vezes, torço para que algo externo me force a decidir.</div><div class="likert" data-q="d2_q10"></div></div>
+        </section>
+
+        <!-- Dimensão 3 -->
+        <section class="dim" data-dim="3">
+          <h3>Dimensão 3 – Codependência e Subjugação Pessoal</h3>
+          <div class="item"><div class="qtext">21. Tenho dificuldade em dizer “não” para ele(a), mesmo quando me machuco.</div><div class="likert" data-q="d3_q1"></div></div>
+          <div class="item"><div class="qtext">22. Sinto que minha vida gira em torno da relação.</div><div class="likert" data-q="d3_q2"></div></div>
+          <div class="item"><div class="qtext">23. Tolero desrespeito para não perder a relação.</div><div class="likert" data-q="d3_q3"></div></div>
+          <div class="item"><div class="qtext">24. Tenho medo de ser rejeitada(o) se eu me impor.</div><div class="likert" data-q="d3_q4"></div></div>
+          <div class="item"><div class="qtext">25. Deixo de fazer coisas importantes por causa dele(a).</div><div class="likert" data-q="d3_q5"></div></div>
+          <div class="item"><div class="qtext">26. Sinto culpa só de pensar em me afastar.</div><div class="likert" data-q="d3_q6"></div></div>
+          <div class="item"><div class="qtext">27. Me vejo anulada(o) dentro do relacionamento.</div><div class="likert" data-q="d3_q7"></div></div>
+          <div class="item"><div class="qtext">28. Me sinto responsável pelo bem-estar emocional dele(a).</div><div class="likert" data-q="d3_q8"></div></div>
+          <div class="item"><div class="qtext">29. Aceito coisas que antes eu jamais aceitaria.</div><div class="likert" data-q="d3_q9"></div></div>
+          <div class="item"><div class="qtext">30. Tenho medo de não sobreviver emocionalmente se me separar.</div><div class="likert" data-q="d3_q10"></div></div>
+        </section>
+
+        <!-- Dimensão 4 -->
+        <section class="dim" data-dim="4">
+          <h3>Dimensão 4 – Traição e Impacto Emocional</h3>
+          <div class="item"><div class="qtext">31. Sinto profunda dor ao lembrar das traições.</div><div class="likert" data-q="d4_q1"></div></div>
+          <div class="item"><div class="qtext">32. A confiança foi destruída e não se reconstruiu.</div><div class="likert" data-q="d4_q2"></div></div>
+          <div class="item"><div class="qtext">33. Me sinto humilhada(o) emocionalmente.</div><div class="likert" data-q="d4_q3"></div></div>
+          <div class="item"><div class="qtext">34. As infidelidades me fizeram duvidar de meu próprio valor.</div><div class="likert" data-q="d4_q4"></div></div>
+          <div class="item"><div class="qtext">35. A imagem que eu tinha da relação foi quebrada.</div><div class="likert" data-q="d4_q5"></div></div>
+          <div class="item"><div class="qtext">36. Percebo que, mesmo ferida(o), tento justificar o outro.</div><div class="likert" data-q="d4_q6"></div></div>
+          <div class="item"><div class="qtext">37. A raiva e tristeza ainda me paralisam.</div><div class="likert" data-q="d4_q7"></div></div>
+          <div class="item"><div class="qtext">38. Me sinto traída(o) não apenas sexualmente, mas como pessoa.</div><div class="likert" data-q="d4_q8"></div></div>
+          <div class="item"><div class="qtext">39. Perdi minha autoestima por causa das traições.</div><div class="likert" data-q="d4_q9"></div></div>
+          <div class="item"><div class="qtext">40. Sinto que estou presa(o) numa repetição dolorosa.</div><div class="likert" data-q="d4_q10"></div></div>
+        </section>
+
+        <!-- Dimensão 5 -->
+        <section class="dim" data-dim="5">
+          <h3>Dimensão 5 – Rede de Apoio e Medos Contextuais</h3>
+          <div class="item"><div class="qtext">41. Tenho medo de ser julgada(o) se me separar.</div><div class="likert" data-q="d5_q1"></div></div>
+          <div class="item"><div class="qtext">42. Sinto que preciso manter as aparências.</div><div class="likert" data-q="d5_q2"></div></div>
+          <div class="item"><div class="qtext">43. Não tenho com quem desabafar de forma segura.</div><div class="likert" data-q="d5_q3"></div></div>
+          <div class="item"><div class="qtext">44. Me preocupo em decepcionar minha família.</div><div class="likert" data-q="d5_q4"></div></div>
+          <div class="item"><div class="qtext">45. Tenho receio de perder estabilidade financeira.</div><div class="likert" data-q="d5_q5"></div></div>
+          <div class="item"><div class="qtext">46. Penso mais nos outros do que em mim ao tomar decisões.</div><div class="likert" data-q="d5_q6"></div></div>
+          <div class="item"><div class="qtext">47. Me preocupo com o sofrimento dos filhos acima do meu.</div><div class="likert" data-q="d5_q7"></div></div>
+          <div class="item"><div class="qtext">48. Temo que, se me separar, ficarei só e esquecida(o).</div><div class="likert" data-q="d5_q8"></div></div>
+          <div class="item"><div class="qtext">49. A dependência financeira pesa na minha decisão.</div><div class="likert" data-q="d5_q9"></div></div>
+          <div class="item"><div class="qtext">50. Não saberia como recomeçar minha vida.</div><div class="likert" data-q="d5_q10"></div></div>
+        </section>
+
+        <!-- Dimensão 6 -->
+        <section class="dim" data-dim="6">
+          <h3>Dimensão 6 – Recursos Internos e Prontidão para a Mudança</h3>
+          <div class="item"><div class="qtext">51. Me sinto mais forte do que antes.</div><div class="likert" data-q="d6_q1"></div></div>
+          <div class="item"><div class="qtext">52. Estou aprendendo a cuidar de mim mesma(o).</div><div class="likert" data-q="d6_q2"></div></div>
+          <div class="item"><div class="qtext">53. Já reconheço o que me fere e o que me fortalece.</div><div class="likert" data-q="d6_q3"></div></div>
+          <div class="item"><div class="qtext">54. Mesmo com dor, consigo refletir com lucidez.</div><div class="likert" data-q="d6_q4"></div></div>
+          <div class="item"><div class="qtext">55. Sei que mereço viver com dignidade emocional.</div><div class="likert" data-q="d6_q5"></div></div>
+          <div class="item"><div class="qtext">56. A separação já não parece um abismo impossível.</div><div class="likert" data-q="d6_q6"></div></div>
+          <div class="item"><div class="qtext">57. Tenho clareza de que preciso mudar algo.</div><div class="likert" data-q="d6_q7"></div></div>
+          <div class="item"><div class="qtext">58. Me percebo mais madura(o) para tomar decisões difíceis.</div><div class="likert" data-q="d6_q8"></div></div>
+          <div class="item"><div class="qtext">59. Sinto que posso suportar as consequências de uma decisão.</div><div class="likert" data-q="d6_q9"></div></div>
+          <div class="item"><div class="qtext">60. Desejo construir uma nova história, com ou sem ele(a).</div><div class="likert" data-q="d6_q10"></div></div>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="calcBtn">Calcular resultado</button>
+        <button class="btn btn-success" id="shareBtn">Enviar via WhatsApp</button>
+        <button class="btn btn-danger" id="resetBtn">Limpar respostas</button>
+      </div>
+
+      <div class="results" id="results" hidden>
+        <h4>Resultados por Dimensão</h4>
+        <div class="res-grid" id="resGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">© <span id="year"></span> Richelmy Murta, Psicólogo Clínico <span style="font-weight:700">®</span> — Todos os direitos reservados.</footer>
+
+  <script>
+    // Ano no rodapé
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Likert builder
+    const scaleLabels = [
+      {v:1, t:'Discordo totalmente'},
+      {v:2, t:'Discordo parcialmente'},
+      {v:3, t:'Nem concordo, nem discordo'},
+      {v:4, t:'Concordo parcialmente'},
+      {v:5, t:'Concordo totalmente'}
+    ];
+
+    // Gera radios (mantendo lógica do seu layout)
+    document.querySelectorAll('.likert').forEach((holder)=>{
+      const name = holder.getAttribute('data-q');
+      scaleLabels.forEach(opt=>{
+        const wrap = document.createElement('label');
+        wrap.className = 'opt';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = name;
+        input.value = String(opt.v);
+        input.required = false;
+        const span = document.createElement('span');
+        span.className = 'lab';
+        span.textContent = opt.v + ' – ' + opt.t;
+        wrap.appendChild(input); wrap.appendChild(span);
+        holder.appendChild(wrap);
+      });
+    });
+
+    // Dimensões (0..100 de saúde; reverse=true inverte)
+    const DIMENSIONS = [
+      { key: 'd1', title: 'Satisfação Conjugal Atual', reverse: false },
+      { key: 'd2', title: 'Ambivalência Decisional', reverse: true },
+      { key: 'd3', title: 'Codependência e Subjugação Pessoal', reverse: true },
+      { key: 'd4', title: 'Traição e Impacto Emocional', reverse: true },
+      { key: 'd5', title: 'Rede de Apoio e Medos Contextuais', reverse: true },
+      { key: 'd6', title: 'Recursos Internos e Prontidão para a Mudança', reverse: false },
+    ];
+
+    function getRawForDim(di){
+      let sum = 0, count=0, missing=[];
+      for(let i=1;i<=10;i++){
+        const name = `${di}_q${i}`;
+        const sel = document.querySelector(`input[name="${name}"]:checked`);
+        if(sel){ sum += Number(sel.value); count++; }
+        else missing.push(name);
+      }
+      return {sum, count, missing};
+    }
+
+    function toHealthScore(sum, count, reverse){
+      if(count===0) return 0;
+      const min = 1*count, max = 5*count;
+      if(!reverse){
+        return Math.round(((sum - min) / (max - min)) * 100);
+      } else {
+        return Math.round(((max - sum) / (max - min)) * 100);
+      }
+    }
+
+    function band(score){
+      if(score <= 24) return {label: 'Zona Crítica (tóxica/risco)', color: '#ef4444'};
+      if(score <= 49) return {label: 'Zona de Ambivalência', color: '#f59e0b'};
+      if(score <= 74) return {label: 'Zona de Transição', color: '#a855f7'};
+      return {label: 'Zona Saudável/Prontidão', color: '#16a34a'};
+    }
+
+    function explanation(dimIndex, score){
+      const texts = [
+        { low:'Baixa satisfação geral. Relação emocionalmente empobrecida ou crivada de ressentimento. Priorize segurança emocional, comunicação estruturada e reavaliação de contratos afetivos.', amb:'Sinais mistos: bons momentos coexistem com frustrações relevantes. Faça experimentos de melhoria com metas e prazos; adie decisões definitivas até obter clareza.', mid:'Base positiva em construção. Consolidar rituais de conexão, respeito e projetos em comum. Monitorar recaídas e revisar expectativas.', high:'Alto bem-estar relacional. Há parceria, afeto e sentido. Se houver crise pontual, há material para reconstrução sem ruptura.' },
+        { low:'Ambivalência elevadíssima (saúde baixa): risco de paralisia decisional ou decisões impulsivas. Trabalhe consciência emocional e balança decisional.', amb:'Ambivalência moderada: contradições internas ainda ativas. Útil clarificar valores e cenários com suporte clínico.', mid:'Ambivalência reduzida: cresce a clareza. Planeje conversas cruciais e marcos temporais.', high:'Baixa ambivalência: alta clareza. Condições favoráveis para manter ou transformar a relação com propósito.' },
+        { low:'Forte fusão emocional e subjugação. Risco de ciclo abusivo. Priorize proteção, limites e reconstrução do eu.', amb:'Sinais de dependência afetiva presentes. Trabalhe assertividade, autocuidado e rede de apoio.', mid:'Autonomia em evolução. Pratique limites consistentes e auto-respeito.', high:'Autonomia firme e identidade preservada. Bom prognóstico para decisões maduras e vínculos saudáveis.' },
+        { low:'Ferida aguda e autoestima fragilizada. Contraindicado decidir sem cuidado terapêutico e plano de segurança.', amb:'Dor ainda ativa porém manejável. Trabalhe reparação, transparência e validação emocional.', mid:'Processamento emocional avançando. Possível reconstrução com acordos claros.', high:'Ferida integrada/superada. Há espaço para confiança responsável ou para encerramento em paz, conforme valores.' },
+        { low:'Aprisionamento social/financeiro e medo elevado. Ação em rede (família confiável, assistência jurídica/financeira) é prioritária.', amb:'Medos relevantes com suporte parcial. Fortaleça alianças e informação de qualidade.', mid:'Rede estabilizando; medos sob controle. Planeje comunicação estratégica.', high:'Boa rede de apoio e baixa interferência de pressões externas. Decisões podem ser assertivas e seguras.' },
+        { low:'Fragilidade e impotência percebida. Evite rupturas sem suporte. Invista em estabilização e rotinas de autocuidado.', amb:'Força emergente. Crie microvitórias, treino de enfrentamento e prática de autorrespeito.', mid:'Maturidade em crescimento: viável planejar passos graduais com suporte.', high:'Alta força interior e clareza. Viável executar plano (manter, transformar ou encerrar) com responsabilidade.' }
+      ];
+      const t = texts[dimIndex];
+      if(score <= 24) return t.low;
+      if(score <= 49) return t.amb;
+      if(score <= 74) return t.mid;
+      return t.high;
+    }
+
+    // Gauge (SVG semicircle 0..100)
+    function createGaugeSVG(colorBand){
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('viewBox','0 0 160 100');
+
+      const bg = document.createElementNS(svg.namespaceURI,'path');
+      bg.setAttribute('d','M10 80 A70 70 0 0 1 150 80');
+      bg.setAttribute('fill','none');
+      bg.setAttribute('stroke','#e5e7eb');
+      bg.setAttribute('stroke-width','12');
+      svg.appendChild(bg);
+
+      const bandArc = document.createElementNS(svg.namespaceURI,'path');
+      bandArc.setAttribute('d','M10 80 A70 70 0 0 1 150 80');
+      bandArc.setAttribute('fill','none');
+      bandArc.setAttribute('stroke', colorBand);
+      bandArc.setAttribute('stroke-width','12');
+      bandArc.setAttribute('stroke-linecap','round');
+      bandArc.setAttribute('opacity','0.25');
+      svg.appendChild(bandArc);
+
+      const needle = document.createElementNS(svg.namespaceURI,'line');
+      needle.setAttribute('x1','80');
+      needle.setAttribute('y1','80');
+      needle.setAttribute('x2','80');
+      needle.setAttribute('y2','18');
+      needle.setAttribute('stroke','#111827');
+      needle.setAttribute('stroke-width','3');
+      needle.setAttribute('class','g-needle');
+      svg.appendChild(needle);
+
+      const dot = document.createElementNS(svg.namespaceURI,'circle');
+      dot.setAttribute('cx','80');
+      dot.setAttribute('cy','80');
+      dot.setAttribute('r','4');
+      dot.setAttribute('fill','#111827');
+      svg.appendChild(dot);
+
+      const labels = [0,25,50,75,100];
+      labels.forEach((val,i)=>{
+        const angle = Math.PI - (i/4)*Math.PI; // 180..0
+        const r=70, cx=80, cy=80;
+        const lx = cx + r*Math.cos(angle);
+        const ly = cy + r*Math.sin(angle);
+        const text = document.createElementNS(svg.namespaceURI,'text');
+        text.setAttribute('x', lx);
+        text.setAttribute('y', ly);
+        text.setAttribute('text-anchor','middle');
+        text.setAttribute('dominant-baseline','central');
+        text.setAttribute('class','g-label');
+        text.textContent = val;
+        svg.appendChild(text);
+      });
+
+      return svg;
+    }
+
+    function setNeedle(svg, score){
+      const needle = svg.querySelector('.g-needle');
+      const s = Math.max(0, Math.min(100, score));   // clamp 0..100
+      const deg = (s - 50) * 1.8;                     // 0→-90°, 50→0°, 100→+90°
+      needle.style.transform = `rotate(${deg}deg)`;
+    }
+
+    function renderResults(){
+      const resWrap = document.getElementById('resGrid');
+      resWrap.innerHTML='';
+
+      const scores = [];
+      const missingAll = [];
+
+      DIMENSIONS.forEach((d, idx)=>{
+        const {sum, count, missing} = getRawForDim(d.key);
+        const health = toHealthScore(sum, count, d.reverse); // 0..100
+        scores.push({ key:d.key, title:d.title, health, count, missing });
+        if(missing.length) missingAll.push(...missing);
+      });
+
+      // destacar não respondidas
+      document.querySelectorAll('.item').forEach(it=>{ it.style.background='transparent'; });
+      missingAll.forEach(name=>{
+        const holder = document.querySelector(`.likert[data-q="${name}"]`);
+        if(holder){ holder.closest('.item').style.background = 'rgba(239,68,68,0.06)'; }
+      });
+
+      scores.forEach((s, i)=>{
+        const card = document.createElement('div');
+        card.className = 'res-card';
+
+        const b = band(s.health);
+        const gaugeBox = document.createElement('div');
+        gaugeBox.className = 'gauge';
+        const svg = createGaugeSVG(b.color);
+        gaugeBox.appendChild(svg);
+        setNeedle(svg, s.health);
+
+        const info = document.createElement('div');
+        const t = document.createElement('div'); t.className='res-title'; t.textContent = s.title;
+        const sc = document.createElement('div'); sc.className='res-score';
+        const answered = `${s.count}/10 respondidas`;
+        sc.textContent = `Saúde relacional: ${s.health}/100 · ${b.label} · ${answered}`;
+        const txt = document.createElement('div'); txt.className='res-text';
+        txt.textContent = explanation(i, s.health);
+
+        info.appendChild(t); info.appendChild(sc); info.appendChild(txt);
+        card.appendChild(gaugeBox); card.appendChild(info);
+        resWrap.appendChild(card);
+      });
+
+      document.getElementById('results').hidden = false;
+      return {scores: resWrap.querySelectorAll('.res-card')};
+    }
+
+    function buildWhatsAppMessage(){
+      const name = document.getElementById('name').value || '(sem nome)';
+      const age = document.getElementById('age').value || '-';
+      const date = document.getElementById('date').value || new Date().toLocaleDateString('pt-BR');
+      const dimEls = document.querySelectorAll('#resGrid .res-card');
+
+      const lines = [];
+      lines.push(`ICAPS – Resultado (0–100)`);
+      lines.push(`Nome: ${name} | Idade: ${age} | Data: ${date}`);
+      DIMENSIONS.forEach((d, idx)=>{
+        const card = dimEls[idx];
+        if(!card) return;
+        const sc = card.querySelector('.res-score').textContent;
+        lines.push(`${d.title}: ${sc}`);
+      });
+      lines.push('— Enviado automaticamente');
+      return encodeURIComponent(lines.join('\n'));
+    }
+
+    // Eventos
+    document.getElementById('calcBtn').addEventListener('click', ()=>{
+      renderResults();
+      window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', ()=>{
+      if(document.getElementById('results').hidden) renderResults();
+      const msg = buildWhatsAppMessage();
+      const phone = '5535984640729';
+      const url = `https://wa.me/${phone}?text=${msg}`;
+      window.open(url, '_blank');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      document.querySelectorAll('input[type="radio"]').forEach(r=> r.checked = false);
+      document.getElementById('results').hidden = true;
+      document.getElementById('resGrid').innerHTML = '';
+      document.querySelectorAll('.item').forEach(it=>{ it.style.background='transparent'; });
+    });
+  </script>
+</body>
+</html>
