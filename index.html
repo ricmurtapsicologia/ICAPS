@@ -5,75 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação</title>
   <meta name="color-scheme" content="light dark">
+
+  <!-- Open Graph / WhatsApp preview (requer página hospedada publicamente) -->
+  <meta property="og:title" content="ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação">
+  <meta property="og:description" content="Instrumento clínico de apoio à decisão. Não substitui avaliação terapêutica completa.">
+  <meta property="og:image" content="https://i.pinimg.com/736x/1b/ac/52/1bac5274d79503af8337f09460d5dc93.jpg">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg: #0f172a; /* slate-900 */
-      --panel: #111827; /* gray-900 */
-      --ink: #0b1020; /* deep ink for text shadows */
-      --card: #ffffff; /* white */
-      --muted: #6b7280; /* gray-500 */
-      --accent: #3b82f6; /* blue-500 */
-      --accent-2: #1d4ed8; /* blue-700 */
-      --good: #16a34a; /* green-600 */
-      --warn: #f59e0b; /* amber-500 */
-      --bad: #ef4444; /* red-500 */
-      --mid: #a855f7; /* violet-500 */
+      --bg: #0f172a;
+      --panel: #111827;
+      --ink: #0b1020;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #3b82f6;
+      --accent-2: #1d4ed8;
+      --good: #16a34a;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --mid: #a855f7;
+      --soft-red: rgba(239,68,68,0.08);
+      --soft-border: rgba(239,68,68,0.55);
     }
     *{ box-sizing: border-box; }
     html, body{
       margin:0; padding:0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji';
       background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
       color:#0f172a;
+      overflow-x: hidden; /* evita overlay horizontal */
     }
-    .wrapper{ max-width: 1000px; margin: 0 auto; padding: 32px 16px 80px; }
+    img, svg{ max-width:100%; height:auto; }
+
+    .wrapper{ max-width: 1000px; margin: 0 auto; padding: 16px 12px 80px; }
     .app-card{
       background: var(--card);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
       overflow: hidden;
     }
-    header.hero{ padding: 28px 28px 16px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);}    
-    .title{ font-weight: 800; letter-spacing: .2px; font-size: clamp(20px, 3.2vw, 28px); color:#0b1020; text-align:center; }
+    header.hero{ padding: 18px 18px 12px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);}    
+    .title{ font-weight: 800; letter-spacing: .2px; font-size: clamp(18px, 3.2vw, 28px); color:#0b1020; text-align:center; }
     .subtitle{ text-align:center; color: var(--muted); margin-top: 6px; font-size: 14px; }
-    .intro{ padding: 18px 28px; font-size: 14.5px; line-height: 1.6; color:#111827; background: #fff; }
-    .grid{ display: grid; grid-template-columns: 1fr; gap: 18px; padding: 0 28px 24px; }
 
-    .info-row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 28px; }
+    /* Banner */
+    .banner-wrap{ width:100%; overflow:hidden; background:#fff; }
+    .banner{ width:100%; display:block; object-fit:cover; max-height: 280px; }
+
+    .intro{ padding: 16px; font-size: 14.5px; line-height: 1.8; color:#111827; background: #fff; text-align: justify; }
+    .grid{ display: grid; grid-template-columns: 1fr; gap: 14px; padding: 0 16px 20px; }
+
+    .info-row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 16px; }
     .field{ display:flex; flex-direction:column; gap:6px; }
     .field label{ font-size: 13px; color:#374151; font-weight:600; }
-    .field input{ padding: 10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; }
+    .field input{ padding: 10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; min-width:0; }
 
-    section.dim{ background:#fff; border:1px solid #eef2f7; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(2,6,23,.05); }
-    section.dim h3{ margin: 0 0 8px; font-size: 18px; color:#0b1020; }
-    .item{ padding: 12px 10px; border-top: 1px dashed #e5e7eb; display:flex; flex-direction:column; gap:10px; }
+    section.dim{ background:#fff; border:1px solid #eef2f7; border-radius: 14px; padding: 14px 12px; box-shadow: 0 4px 14px rgba(2,6,23,.05); }
+    section.dim h3{ margin: 0 0 8px; font-size: clamp(16px, 2.8vw, 18px); color:#0b1020; }
+    .item{ padding: 10px 8px; border-top: 1px dashed #e5e7eb; display:flex; flex-direction:column; gap:10px; }
     .item:first-of-type{ border-top: none; }
-    .qtext{ font-size: 14.5px; color:#111827; }
+    .qtext{ font-size: 14.5px; color:#111827; text-align: justify; word-break: break-word; }
 
     .likert{ display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
     .likert .opt{ display:flex; align-items:center; gap:6px; }
     .likert input[type="radio"]{ accent-color: var(--accent); width:18px; height:18px; }
     .likert .lab{ font-size:12.5px; color:#374151; }
 
-    .actions{ display:flex; flex-wrap: wrap; gap:12px; justify-content:center; padding: 18px 28px 26px; border-top:1px solid #e5e7eb; background: linear-gradient(180deg, #f8fafc 0, #eef2ff 100%); }
+    /* Destaque de não respondidas */
+    .missing{ background: var(--soft-red) !important; border-left: 4px solid var(--soft-border); border-radius: 8px; }
+
+    .actions{ display:flex; flex-wrap: wrap; gap:10px; justify-content:center; padding: 16px; border-top:1px solid #e5e7eb; background: linear-gradient(180deg, #f8fafc 0, #eef2ff 100%); }
     .btn{ border:0; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor:pointer; transition: transform .08s ease, box-shadow .2s; }
     .btn:hover{ transform: translateY(-1px); }
-    .btn:active{ transform: translateY(0); }
     .btn-primary{ background: var(--accent); color:#fff; box-shadow: 0 10px 18px rgba(59,130,246,.22); }
-    .btn-outline{ background: #fff; color: var(--accent-2); border: 2px solid var(--accent-2); }
     .btn-success{ background: var(--good); color:#fff; }
     .btn-danger{ background: var(--bad); color:#fff; }
+    .btn-outline{ background:#fff; color: var(--accent-2); border: 2px solid var(--accent-2); }
 
     /* Results */
-    .results{ padding: 24px 28px 36px; background:#fff; border-top:1px solid #e5e7eb; }
+    .results{ padding: 18px 16px 28px; background:#fff; border-top:1px solid #e5e7eb; }
     .results h4{ margin:0 0 10px; font-size: 18px; }
-    .res-grid{ display:grid; grid-template-columns: 1fr; gap: 18px; }
-    .res-card{ border:1px solid #eef2f7; border-radius:14px; padding:16px; display:grid; grid-template-columns: 160px 1fr; gap:16px; align-items:center; }
+    .res-grid{ display:grid; grid-template-columns: 1fr; gap: 14px; }
+    .res-card{ border:1px solid #eef2f7; border-radius:14px; padding:12px; display:grid; grid-template-columns: 160px 1fr; gap:12px; align-items:center; }
     .res-title{ font-weight:800; font-size: 16px; margin:0 0 6px; }
     .res-score{ font-size: 13px; color:#6b7280; margin-bottom: 8px; }
-    .res-text{ font-size: 14px; color:#0f172a; line-height:1.5; text-align: justify; }
+    .res-text{ font-size: 14px; color:#0f172a; line-height:1.6; text-align: justify; }
 
     /* Gauge */
     .gauge{ width: 160px; height: 100px; position: relative; }
@@ -82,7 +102,25 @@
     .g-label{ font-size:10px; fill:#374151; }
 
     /* Footer */
-    footer.app-footer{ max-width:1000px; margin:24px auto 32px; color:#e5e7eb; text-align:center; font-size:12.5px; }
+    footer.app-footer{ max-width:1000px; margin:18px auto 28px; color:#e5e7eb; text-align:center; font-size:12.5px; padding: 0 12px; }
+
+    /* Responsivo */
+    @media (max-width: 1024px){
+      .res-card{ grid-template-columns: 140px 1fr; }
+    }
+    @media (max-width: 768px){
+      .info-row{ grid-template-columns: 1fr; margin: 10px 12px; }
+      .grid{ padding: 0 12px 16px; }
+      .res-card{ grid-template-columns: 1fr; }
+      .gauge{ margin: 0 auto; }
+      .intro, .qtext, .res-text{ text-align: justify; }
+      header.hero{ padding: 14px; }
+      .banner{ max-height: 220px; }
+    }
+    @media (max-width: 420px){
+      .title{ font-size: 18px; }
+      .banner{ max-height: 180px; }
+    }
   </style>
 </head>
 <body>
@@ -92,6 +130,11 @@
         <div class="title">ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação</div>
         <div class="subtitle">Instrumento clínico de apoio à decisão. Não substitui avaliação terapêutica completa.</div>
       </header>
+
+      <!-- Banner -->
+      <div class="banner-wrap">
+        <img class="banner" src="https://i.pinimg.com/736x/1b/ac/52/1bac5274d79503af8337f09460d5dc93.jpg" alt="Banner ICAPS">
+      </div>
 
       <div class="intro">
         <strong>Introdução ao Paciente</strong><br>
@@ -228,7 +271,7 @@
     // Ano no rodapé
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Likert builder
+    // Escala Likert
     const scaleLabels = [
       {v:1, t:'Discordo totalmente'},
       {v:2, t:'Discordo parcialmente'},
@@ -237,7 +280,7 @@
       {v:5, t:'Concordo totalmente'}
     ];
 
-    // Gera radios (mantendo lógica do seu layout)
+    // Geração de radios
     document.querySelectorAll('.likert').forEach((holder)=>{
       const name = holder.getAttribute('data-q');
       scaleLabels.forEach(opt=>{
@@ -247,7 +290,6 @@
         input.type = 'radio';
         input.name = name;
         input.value = String(opt.v);
-        input.required = false;
         const span = document.createElement('span');
         span.className = 'lab';
         span.textContent = opt.v + ' – ' + opt.t;
@@ -256,7 +298,7 @@
       });
     });
 
-    // Dimensões (0..100 de saúde; reverse=true inverte)
+    // Dimensões
     const DIMENSIONS = [
       { key: 'd1', title: 'Satisfação Conjugal Atual', reverse: false },
       { key: 'd2', title: 'Ambivalência Decisional', reverse: true },
@@ -277,6 +319,37 @@
       return {sum, count, missing};
     }
 
+    // Coleta todas não respondidas
+    function findAllMissing(){
+      const missing = [];
+      for(const d of DIMENSIONS){
+        const r = getRawForDim(d.key);
+        if(r.missing.length) missing.push(...r.missing);
+      }
+      return missing;
+    }
+
+    // Destaca não respondidas
+    function highlightMissing(missingNames){
+      // limpar
+      document.querySelectorAll('.item').forEach(it=> it.classList.remove('missing'));
+      // aplicar
+      missingNames.forEach(name=>{
+        const holder = document.querySelector(`.likert[data-q="${name}"]`);
+        if(holder){ holder.closest('.item').classList.add('missing'); }
+      });
+    }
+
+    // Remove destaque quando uma resposta é marcada
+    document.addEventListener('change', (e)=>{
+      if(e.target && e.target.matches('input[type="radio"]')){
+        const name = e.target.name;
+        const holder = document.querySelector(`.likert[data-q="${name}"]`);
+        if(holder){ holder.closest('.item').classList.remove('missing'); }
+      }
+    });
+
+    // Score Saúde 0..100 (inverte quando necessário)
     function toHealthScore(sum, count, reverse){
       if(count===0) return 0;
       const min = 1*count, max = 5*count;
@@ -310,7 +383,7 @@
       return t.high;
     }
 
-    // Gauge (SVG semicircle 0..100)
+    // Gauge 0..100
     function createGaugeSVG(colorBand){
       const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('viewBox','0 0 160 100');
@@ -379,20 +452,11 @@
       resWrap.innerHTML='';
 
       const scores = [];
-      const missingAll = [];
 
       DIMENSIONS.forEach((d, idx)=>{
-        const {sum, count, missing} = getRawForDim(d.key);
+        const {sum, count} = getRawForDim(d.key);
         const health = toHealthScore(sum, count, d.reverse); // 0..100
-        scores.push({ key:d.key, title:d.title, health, count, missing });
-        if(missing.length) missingAll.push(...missing);
-      });
-
-      // destacar não respondidas
-      document.querySelectorAll('.item').forEach(it=>{ it.style.background='transparent'; });
-      missingAll.forEach(name=>{
-        const holder = document.querySelector(`.likert[data-q="${name}"]`);
-        if(holder){ holder.closest('.item').style.background = 'rgba(239,68,68,0.06)'; }
+        scores.push({ key:d.key, title:d.title, health, count });
       });
 
       scores.forEach((s, i)=>{
@@ -420,7 +484,6 @@
       });
 
       document.getElementById('results').hidden = false;
-      return {scores: resWrap.querySelectorAll('.res-card')};
     }
 
     function buildWhatsAppMessage(){
@@ -442,13 +505,30 @@
       return encodeURIComponent(lines.join('\n'));
     }
 
-    // Eventos
+    // Botões
     document.getElementById('calcBtn').addEventListener('click', ()=>{
+      const missing = findAllMissing();
+      if(missing.length){
+        highlightMissing(missing);
+        const first = document.querySelector(`.likert[data-q="${missing[0]}"]`);
+        if(first) first.closest('.item').scrollIntoView({behavior:'smooth', block:'center'});
+        alert('Existem perguntas não respondidas. Responda todas antes de calcular.');
+        return;
+      }
+      highlightMissing([]); // limpa
       renderResults();
       window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
     });
 
     document.getElementById('shareBtn').addEventListener('click', ()=>{
+      const missing = findAllMissing();
+      if(missing.length){
+        highlightMissing(missing);
+        const first = document.querySelector(`.likert[data-q="${missing[0]}"]`);
+        if(first) first.closest('.item').scrollIntoView({behavior:'smooth', block:'center'});
+        alert('Responda todas as perguntas antes de compartilhar no WhatsApp.');
+        return;
+      }
       if(document.getElementById('results').hidden) renderResults();
       const msg = buildWhatsAppMessage();
       const phone = '5535984640729';
@@ -460,7 +540,8 @@
       document.querySelectorAll('input[type="radio"]').forEach(r=> r.checked = false);
       document.getElementById('results').hidden = true;
       document.getElementById('resGrid').innerHTML = '';
-      document.querySelectorAll('.item').forEach(it=>{ it.style.background='transparent'; });
+      document.querySelectorAll('.item').forEach(it=> it.classList.remove('missing'));
+      window.scrollTo({ top: 0, behavior:'smooth' });
     });
   </script>
 </body>
