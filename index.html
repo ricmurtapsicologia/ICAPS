@@ -174,7 +174,6 @@
       </div>
 
       <div class="grid" id="questionnaire">
-        <!-- Dimensões… (mantidas iguais) -->
         <!-- Dimensão 1 -->
         <section class="dim" data-dim="1">
           <h3>Dimensão 1 – Satisfação Conjugal Atual</h3>
@@ -266,18 +265,18 @@
         </section>
       </div>
 
-      <!-- Ações principais (sem WhatsApp aqui) -->
+      <!-- AQUI: mantive exatamente como estava, apenas REMOVI o botão de WhatsApp deste bloco -->
       <div class="actions">
         <button class="btn btn-primary" id="calcBtn">Calcular resultado</button>
         <button class="btn btn-danger" id="resetBtn">Limpar respostas</button>
       </div>
 
-      <!-- Resultados + botão WhatsApp centralizado no final -->
       <div class="results" id="results" hidden>
         <h4>Resultados por Dimensão</h4>
         <div class="res-grid" id="resGrid"></div>
+        <!-- NOVO: botão de WhatsApp no final da correção, centralizado/simétrico -->
         <div class="actions">
-          <button class="btn btn-success" id="shareBtn">Enviar resultado ao psicólogo via WhatsApp</button>
+          <button class="btn btn-success" id="shareBtn">Enviar via WhatsApp</button>
         </div>
       </div>
     </div>
@@ -349,7 +348,9 @@
 
     // Destaca não respondidas
     function highlightMissing(missingNames){
+      // limpar
       document.querySelectorAll('.item').forEach(it=> it.classList.remove('missing'));
+      // aplicar
       missingNames.forEach(name=>{
         const holder = document.querySelector(`.likert[data-q="${name}"]`);
         if(holder){ holder.closest('.item').classList.add('missing'); }
@@ -502,7 +503,7 @@
       document.getElementById('results').hidden = false;
     }
 
-    // Mensagem de WhatsApp com qualitativo + quantitativo
+    // >>> ALTERADO: mensagem de WhatsApp com qualitativo + quantitativo
     function buildWhatsAppMessage(){
       const name = document.getElementById('name').value || '(sem nome)';
       const age = document.getElementById('age').value || '-';
@@ -517,14 +518,14 @@
       resCards.forEach((card, idx)=>{
         const title = DIMENSIONS[idx].title;
         const scoreLine = card.querySelector('.res-score')?.textContent || '';
-        const meaning = card.querySelector('.res-text')?.textContent || '';
+        const text = card.querySelector('.res-text')?.textContent || '';
         const parts = scoreLine.split('·').map(s => s.trim());
         const scorePart = parts[0] || ''; // "Saúde relacional: 72/100"
         const zonePart  = parts[1] || ''; // "Zona de Transição"
         lines.push(`• ${title}`);
         if(scorePart) lines.push(`  - ${scorePart}`);
         if(zonePart)  lines.push(`  - ${zonePart}`);
-        if(meaning)   lines.push(`  - Significado clínico: ${meaning}`);
+        if(text)      lines.push(`  - Significado clínico: ${text}`);
         lines.push('');
       });
 
@@ -544,16 +545,17 @@
       }
       highlightMissing([]); // limpa
       renderResults();
-      document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+      window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
     });
 
+    // >>> ALTERADO: agora só envia se os resultados estiverem visíveis (botão está no final)
     document.getElementById('shareBtn').addEventListener('click', ()=>{
       if(document.getElementById('results').hidden){
         alert('Calcule o resultado antes de enviar.');
         return;
       }
       const msg = buildWhatsAppMessage();
-      const phone = '5535984640729'; // número do psicólogo
+      const phone = '5535984640729'; // mantém o mesmo número informado
       const url = `https://wa.me/${phone}?text=${msg}`;
       window.open(url, '_blank');
     });
@@ -563,4 +565,8 @@
       document.getElementById('results').hidden = true;
       document.getElementById('resGrid').innerHTML = '';
       document.querySelectorAll('.item').forEach(it=> it.classList.remove('missing'));
-      window.scrollTo({ top: 0,
+      window.scrollTo({ top: 0, behavior:'smooth' });
+    });
+  </script>
+</body>
+</html>
