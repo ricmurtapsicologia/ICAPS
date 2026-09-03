@@ -1,13 +1,15 @@
 import { renderQuestionnaire } from './render.js';
 import { collectResponses, clearMissing, markMissing } from './validation.js';
-import { submitToGoogleForm } from './google-form.js';
+import { submitAssessment } from './submission.js';
 
 const form = document.getElementById('icaps-form');
 const questionnaire = document.getElementById('questionnaire');
-const resultsSection = document.getElementById('results');
 const status = document.getElementById('form-status');
-const calculateButton = document.getElementById('calculate');
+const submitButton = document.getElementById('submit-assessment');
 const resetButton = document.getElementById('reset');
+const progress = document.getElementById('progress');
+const progressText = document.getElementById('progress-text');
+const patientCodeInput = document.getElementById('patient-code');
 
 let definition;
 let submissionInFlight = false;
@@ -18,10 +20,19 @@ function announce(message, kind='info') {
   status.dataset.kind = kind;
 }
 
-function todayISO() {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
+function readPatientCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = String(params.get('patient_code') || params.get('code') || '').trim();
+  return /^[A-Za-z0-9._-]{1,64}$/.test(raw) ? raw : '';
+}
+
+function updateProgress() {
+  if (!definition) return;
+  const { responses } = collectResponses(form, definition);
+  const answered = Object.keys(responses).length;
+  progress.value = answered;
+  progressText.textContent = `${answered} de 60 respondidas`;
+  progress.textContent = `${answered} de 60`;
 }
 
 async function init() {
@@ -30,13 +41,14 @@ async function init() {
   definition = await response.json();
   if (definition.meta.itemCount !== 60) throw new Error('DEFINITION_ITEM_COUNT_INVALID');
   renderQuestionnaire(questionnaire, definition);
-  document.getElementById('date').value = todayISO();
+  patientCodeInput.value = readPatientCodeFromUrl();
   document.getElementById('year').textContent = String(new Date().getFullYear());
   document.getElementById('version').textContent = definition.meta.instrumentVersion;
-  resultsSection.hidden = true;
+  updateProgress();
 }
 
-calculateButton.addEventListener('click', async () => {
+form.addEventListener('submit', async event => {
+  event.preventDefault();
   if (submissionInFlight) return;
   if (submitted) {
     announce('Suas respostas já foram registradas e encaminhadas ao psicólogo responsável para análise.', 'success');
@@ -46,18 +58,25 @@ calculateButton.addEventListener('click', async () => {
   clearMissing(form);
   const name = document.getElementById('name');
   const age = document.getElementById('age');
-  const date = document.getElementById('date');
+  const privacyAck = document.getElementById('privacy-ack');
+  const patientCode = patientCodeInput.value;
 
-  if ((age.value && !age.checkValidity()) || !date.checkValidity()) {
-    announce('Revise os dados de identificação antes de calcular.', 'error');
-    (age.value && !age.checkValidity() ? age : date).reportValidity();
+  if (!patientCode && !name.value.trim()) {
+    announce('Informe seu nome completo para identificar a avaliação.', 'error');
+    name.focus();
+    return;
+  }
+
+  if ((age.value && !age.checkValidity()) || !privacyAck.checkValidity()) {
+    announce('Revise os dados de identificação e confirme a leitura do aviso de privacidade.', 'error');
+    (age.value && !age.checkValidity() ? age : privacyAck).reportValidity();
     return;
   }
 
   const { responses, missing } = collectResponses(form, definition);
   if (missing.length) {
     markMissing(form, missing);
-    announce(`Há ${missing.length} pergunta(s) sem resposta. Complete todas antes de calcular.`, 'error');
+    announce(`Há ${missing.length} pergunta(s) sem resposta. Complete todas antes de enviar.`, 'error');
     const first = form.querySelector(`[data-item-id="${missing[0]}"]`);
     first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     first?.focus({ preventScroll: true });
@@ -65,49 +84,52 @@ calculateButton.addEventListener('click', async () => {
   }
 
   submissionInFlight = true;
-  calculateButton.disabled = true;
-  calculateButton.setAttribute('aria-busy', 'true');
+  submitButton.disabled = true;
+  submitButton.setAttribute('aria-busy', 'true');
   announce('Registrando suas respostas…', 'info');
 
   try {
-    await submitToGoogleForm(definition, responses, {
+    const confirmation = await submitAssessment(definition, responses, {
+      patientCode,
       name: name.value,
       age: age.value
     });
+    if (!confirmation?.persisted) throw new Error('PERSISTENCE_NOT_CONFIRMED');
     submitted = true;
-    resultsSection.hidden = true;
     announce('Suas respostas foram registradas e encaminhadas ao psicólogo responsável para análise.', 'success');
   } catch (error) {
     console.error(error);
-    announce('Não foi possível registrar as respostas. Verifique sua conexão e tente novamente.', 'error');
+    announce('Não foi possível confirmar o registro das respostas. Verifique sua conexão e tente novamente.', 'error');
   } finally {
     submissionInFlight = false;
-    calculateButton.disabled = false;
-    calculateButton.removeAttribute('aria-busy');
+    submitButton.disabled = false;
+    submitButton.removeAttribute('aria-busy');
   }
 });
 
 resetButton.addEventListener('click', () => {
   form.reset();
-  document.getElementById('date').value = todayISO();
+  patientCodeInput.value = readPatientCodeFromUrl();
   clearMissing(form);
-  resultsSection.hidden = true;
   submitted = false;
   submissionInFlight = false;
-  calculateButton.disabled = false;
-  calculateButton.removeAttribute('aria-busy');
+  submitButton.disabled = false;
+  submitButton.removeAttribute('aria-busy');
+  updateProgress();
   announce('Respostas limpas.', 'info');
   document.getElementById('intro-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 form.addEventListener('change', event => {
-  if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') return;
-  event.target.closest('.question')?.classList.remove('missing');
-  event.target.closest('.question')?.removeAttribute('aria-invalid');
+  if (event.target instanceof HTMLInputElement && event.target.type === 'radio') {
+    event.target.closest('.question')?.classList.remove('missing');
+    event.target.closest('.question')?.removeAttribute('aria-invalid');
+    updateProgress();
+  }
 });
 
 init().catch(error => {
   console.error(error);
   announce('Falha ao carregar o instrumento. Recarregue a página.', 'error');
-  calculateButton.disabled = true;
+  submitButton.disabled = true;
 });
