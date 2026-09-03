@@ -59,6 +59,7 @@ form.addEventListener('submit', async event => {
   const name = document.getElementById('name');
   const age = document.getElementById('age');
   const privacyAck = document.getElementById('privacy-ack');
+  const website = document.getElementById('website');
   const patientCode = patientCodeInput.value;
 
   if (!patientCode && !name.value.trim()) {
@@ -92,7 +93,8 @@ form.addEventListener('submit', async event => {
     const confirmation = await submitAssessment(definition, responses, {
       patientCode,
       name: name.value,
-      age: age.value
+      age: age.value,
+      website: website.value
     });
     if (!confirmation?.persisted) throw new Error('PERSISTENCE_NOT_CONFIRMED');
     submitted = true;
