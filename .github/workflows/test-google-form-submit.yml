@@ -12,11 +12,11 @@ jobs:
   submit:
     runs-on: ubuntu-latest
     steps:
-      - name: Submit synthetic ICAPS response
+      - name: Submit synthetic ICAPS response with minimal hidden fields
         shell: bash
         run: |
           python - <<'PY'
-          import json, re, urllib.request, urllib.parse, html as htmlmod
+          import json, re, urllib.request, urllib.parse
           view='https://docs.google.com/forms/d/e/1FAIpQLScyXa5vZ_uwykhBi2dzhLqGb8MrgJ0MDF6llfmc20G1RKruqw/viewform'
           post='https://docs.google.com/forms/d/e/1FAIpQLScyXa5vZ_uwykhBi2dzhLqGb8MrgJ0MDF6llfmc20G1RKruqw/formResponse'
           req=urllib.request.Request(view, headers={'User-Agent':'Mozilla/5.0'})
@@ -32,36 +32,29 @@ jobs:
                   entry=item[4][0][0]
                   if entry is not None and title:
                       fields[title]=str(entry)
-          def hidden(name):
-              mm=re.search(r'<input[^>]+name="'+re.escape(name)+r'"[^>]+value="([^"]*)"', source)
-              return htmlmod.unescape(mm.group(1)) if mm else ''
           payload={
-              'fvv': hidden('fvv') or '1',
-              'fbzx': hidden('fbzx'),
-              'partialResponse': hidden('partialResponse'),
-              'pageHistory': '0,1,2,3,4,5,6',
-              'submissionTimestamp': '-1',
-              'entry.'+fields['Nome completo']: 'TESTE TÉCNICO ICAPS — EXCLUIR',
-              'entry.'+fields['Código do paciente (se informado pelo psicólogo)']: 'TECH-E2E-20260902',
-              'entry.'+fields['Idade']: '46',
+              'fvv':'1',
+              'pageHistory':'0,1,2,3,4,5,6',
+              'entry.'+fields['Nome completo']:'TESTE TÉCNICO ICAPS MINIMAL — EXCLUIR',
+              'entry.'+fields['Código do paciente (se informado pelo psicólogo)']:'TECH-MINIMAL-20260902',
+              'entry.'+fields['Idade']:'46',
           }
           numbered=[]
-          for title, entry in fields.items():
-              mm=re.match(r'^(\d+)\.', title)
-              if mm:
-                  numbered.append((int(mm.group(1)), entry))
+          for title,entry in fields.items():
+              mm=re.match(r'^(\d+)\.',title)
+              if mm: numbered.append((int(mm.group(1)),entry))
           numbered.sort()
           if len(numbered)!=60: raise SystemExit(f'expected 60 scale items, got {len(numbered)}')
-          for n,entry in numbered:
-              payload['entry.'+entry]='3'
+          for _,entry in numbered:
+              payload['entry.'+entry]='4'
           body=urllib.parse.urlencode(payload).encode()
-          req=urllib.request.Request(post, data=body, headers={
+          req=urllib.request.Request(post,data=body,headers={
               'User-Agent':'Mozilla/5.0',
               'Content-Type':'application/x-www-form-urlencoded',
               'Referer':view,
           })
-          with urllib.request.urlopen(req, timeout=30) as r:
+          with urllib.request.urlopen(req,timeout=30) as r:
               out=r.read().decode('utf-8','replace')
-              print('HTTP', r.status, 'final_url', r.geturl(), 'body_bytes', len(out), 'fields', len(numbered)+3)
-              print('confirmation_seen', 'Suas respostas foram registradas' in out)
+              print('HTTP',r.status,'final_url',r.geturl(),'body_bytes',len(out),'fields',len(numbered)+3)
+              print('confirmation_seen','Suas respostas foram registradas' in out)
           PY
