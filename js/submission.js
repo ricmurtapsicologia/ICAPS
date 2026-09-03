@@ -1,4 +1,5 @@
 const SUBMISSION_ENDPOINT = 'https://secretaria-digital-core.vercel.app/api/icaps_submit';
+const PAGE_STARTED_AT = new Date().toISOString();
 
 export async function submitAssessment(definition, responses, identity = {}) {
   const controller = new AbortController();
@@ -10,7 +11,9 @@ export async function submitAssessment(definition, responses, identity = {}) {
     patientCode: String(identity.patientCode || '').trim(),
     name: String(identity.name || '').trim(),
     age: String(identity.age || '').trim(),
+    website: String(identity.website || '').trim(),
     responses,
+    startedAtClient: PAGE_STARTED_AT,
     submittedAtClient: new Date().toISOString()
   };
 
@@ -36,10 +39,7 @@ export async function submitAssessment(definition, responses, identity = {}) {
       throw new Error(`SUBMISSION_NOT_CONFIRMED:${code}`);
     }
 
-    return {
-      persisted: true,
-      receivedAt: data.receivedAt || null
-    };
+    return { persisted: true, receivedAt: data.receivedAt || null };
   } finally {
     window.clearTimeout(timeout);
   }
