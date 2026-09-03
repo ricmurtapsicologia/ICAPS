@@ -1,4 +1,4 @@
-export const SCORE_VERSION = '2.0.0';
+export const SCORE_VERSION = '2.1.0';
 
 export function parseLikert(value) {
   const n = Number(value);
@@ -53,6 +53,7 @@ export function scoreAssessment(definition, responses) {
   return {
     instrumentVersion: definition.meta.instrumentVersion,
     scoringVersion: definition.meta.scoringVersion,
+    interpretationVersion: definition.meta.interpretationVersion,
     dimensions
   };
 }
