@@ -1,22 +1,17 @@
-import { scoreAssessment } from './scoring.js';
-import { buildIntegratedSummary } from './interpretation.js';
-import { renderQuestionnaire, renderResults } from './render.js';
+import { renderQuestionnaire } from './render.js';
 import { collectResponses, clearMissing, markMissing } from './validation.js';
-import { shareByWhatsApp } from './share.js';
+import { submitToGoogleForm } from './google-form.js';
 
 const form = document.getElementById('icaps-form');
 const questionnaire = document.getElementById('questionnaire');
 const resultsSection = document.getElementById('results');
-const resultsGrid = document.getElementById('results-grid');
-const summary = document.getElementById('integrated-summary');
 const status = document.getElementById('form-status');
 const calculateButton = document.getElementById('calculate');
 const resetButton = document.getElementById('reset');
-const shareButton = document.getElementById('share');
-const resultHeading = document.getElementById('results-title');
 
 let definition;
-let lastResult = null;
+let submissionInFlight = false;
+let submitted = false;
 
 function announce(message, kind='info') {
   status.textContent = message;
@@ -38,17 +33,27 @@ async function init() {
   document.getElementById('date').value = todayISO();
   document.getElementById('year').textContent = String(new Date().getFullYear());
   document.getElementById('version').textContent = definition.meta.instrumentVersion;
+  resultsSection.hidden = true;
 }
 
-calculateButton.addEventListener('click', () => {
+calculateButton.addEventListener('click', async () => {
+  if (submissionInFlight) return;
+  if (submitted) {
+    announce('Suas respostas já foram registradas e encaminhadas ao psicólogo responsável para análise.', 'success');
+    return;
+  }
+
   clearMissing(form);
+  const name = document.getElementById('name');
   const age = document.getElementById('age');
   const date = document.getElementById('date');
+
   if ((age.value && !age.checkValidity()) || !date.checkValidity()) {
     announce('Revise os dados de identificação antes de calcular.', 'error');
     (age.value && !age.checkValidity() ? age : date).reportValidity();
     return;
   }
+
   const { responses, missing } = collectResponses(form, definition);
   if (missing.length) {
     markMissing(form, missing);
@@ -59,18 +64,26 @@ calculateButton.addEventListener('click', () => {
     return;
   }
 
+  submissionInFlight = true;
+  calculateButton.disabled = true;
+  calculateButton.setAttribute('aria-busy', 'true');
+  announce('Registrando suas respostas…', 'info');
+
   try {
-    const scored = scoreAssessment(definition, responses);
-    lastResult = scored.dimensions;
-    renderResults(resultsGrid, lastResult);
-    summary.textContent = buildIntegratedSummary(lastResult);
-    resultsSection.hidden = false;
-    announce('Resultado calculado. A interpretação deve ser contextualizada clinicamente.', 'success');
-    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(() => resultHeading.focus({ preventScroll: true }), 350);
+    await submitToGoogleForm(definition, responses, {
+      name: name.value,
+      age: age.value
+    });
+    submitted = true;
+    resultsSection.hidden = true;
+    announce('Suas respostas foram registradas e encaminhadas ao psicólogo responsável para análise.', 'success');
   } catch (error) {
     console.error(error);
-    announce('Não foi possível calcular o resultado. Revise as respostas e tente novamente.', 'error');
+    announce('Não foi possível registrar as respostas. Verifique sua conexão e tente novamente.', 'error');
+  } finally {
+    submissionInFlight = false;
+    calculateButton.disabled = false;
+    calculateButton.removeAttribute('aria-busy');
   }
 });
 
@@ -79,19 +92,12 @@ resetButton.addEventListener('click', () => {
   document.getElementById('date').value = todayISO();
   clearMissing(form);
   resultsSection.hidden = true;
-  resultsGrid.innerHTML = '';
-  summary.textContent = '';
-  lastResult = null;
+  submitted = false;
+  submissionInFlight = false;
+  calculateButton.disabled = false;
+  calculateButton.removeAttribute('aria-busy');
   announce('Respostas limpas.', 'info');
   document.getElementById('intro-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-
-shareButton.addEventListener('click', () => {
-  if (!lastResult) {
-    announce('Calcule o resultado antes de compartilhar.', 'error');
-    return;
-  }
-  shareByWhatsApp(lastResult, definition.meta);
 });
 
 form.addEventListener('change', event => {
