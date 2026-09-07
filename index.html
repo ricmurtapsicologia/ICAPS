@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação</title>
+  <title>Clareza para decisões importantes no relacionamento</title>
   <meta name="description" content="Instrumento clínico estruturado de apoio à reflexão e ao direcionamento clínico em situações de conflito conjugal.">
   <meta name="author" content="Richelmy Murta, Psicólogo Clínico">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação">
-  <meta property="og:description" content="Instrumento clínico estruturado de apoio. Não constitui teste psicológico diagnóstico.">
+  <meta property="og:title" content="Clareza para decisões importantes no relacionamento">
+  <meta property="og:description" content="Instrumento clínico estruturado de apoio à reflexão. Não constitui teste psicológico diagnóstico.">
   <meta property="og:image" content="https://i.pinimg.com/736x/bc/29/dc/bc29dc55699573c9d9d8fc9935643542.jpg">
-  <meta property="og:image:alt" content="Banner do ICAPS – Inventário de Prontidão para Separação">
+  <meta property="og:image:alt" content="Imagem de apoio à reflexão sobre decisões relacionais">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ricmurtapsicologia.github.io/ICAPS/">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ICAPS – Inventário Clínico para Avaliação de Prontidão para Separação">
+  <meta name="twitter:title" content="Clareza para decisões importantes no relacionamento">
   <meta name="twitter:description" content="Instrumento clínico estruturado de apoio à reflexão em contexto conjugal.">
   <meta name="twitter:image" content="https://i.pinimg.com/736x/bc/29/dc/bc29dc55699573c9d9d8fc9935643542.jpg">
   <link rel="stylesheet" href="./assets/styles.css">
+  <link rel="stylesheet" href="https://ricmurtapsicologia.github.io/plataforma.terapeutica/assets/css/screening-system-v2.css?v=2.0.0">
 </head>
 <body>
   <a class="skip-link" href="#main-content">Ir para o conteúdo principal</a>
@@ -29,19 +30,19 @@
       </header>
 
       <figure class="banner-wrap">
-        <img class="banner" src="https://i.pinimg.com/736x/1b/ac/52/1bac5274d79503af8337f09460d5dc93.jpg" alt="Banner visual do ICAPS">
+        <img class="banner" src="https://i.pinimg.com/736x/1b/ac/52/1bac5274d79503af8337f09460d5dc93.jpg" alt="Duas trajetórias visuais que sugerem reflexão e escolha">
       </figure>
 
       <section class="intro" aria-labelledby="intro-title">
-        <h2 id="intro-title">Introdução ao paciente</h2>
-        <p>Este é um <strong>instrumento clínico estruturado</strong>, voltado a pessoas em conflito conjugal, especialmente em contextos de dúvida sobre separação, repetição de traições, dependência ou codependência emocional.</p>
-        <p><strong>Importante:</strong> o ICAPS não é um teste psicológico diagnóstico e não possui pontos de corte psicométricos validados. Não deve ser utilizado como único critério para decidir sobre continuidade ou término do relacionamento. As respostas serão analisadas pelo psicólogo responsável em conjunto com o contexto clínico.</p>
+        <h2 id="intro-title">Antes de responder</h2>
+        <p>Este é um <strong>instrumento clínico estruturado</strong> para organizar aspectos relevantes de relações em conflito e apoiar a reflexão clínica sobre decisões importantes.</p>
+        <p><strong>Importante:</strong> o instrumento não é um teste psicológico diagnóstico e não possui pontos de corte psicométricos validados. Não deve ser utilizado como único critério para decidir sobre continuidade ou término do relacionamento. As respostas serão analisadas pelo psicólogo responsável em conjunto com o contexto clínico.</p>
         <p>Responda considerando <strong>como você se sente atualmente</strong> em sua relação. Todas as 60 afirmações utilizam a escala de 1 a 5.</p>
       </section>
 
       <section class="privacy-summary" aria-labelledby="privacy-title">
         <h2 id="privacy-title">Privacidade e finalidade</h2>
-        <p>As respostas podem conter informações pessoais e de saúde. Elas são coletadas exclusivamente para apoio ao atendimento psicológico e à análise clínica pelo profissional responsável, com armazenamento em serviços Google vinculados ao fluxo clínico. O resultado não é exibido nesta página nem compartilhado automaticamente por WhatsApp.</p>
+        <p>As respostas podem conter informações pessoais e de saúde. Elas são coletadas exclusivamente para apoio ao atendimento psicológico e à análise clínica pelo profissional responsável. O resultado não é exibido nesta página nem compartilhado por WhatsApp.</p>
         <p><a href="./privacidade.html" target="_blank" rel="noopener">Leia o aviso de privacidade completo</a>.</p>
       </section>
 
@@ -53,14 +54,22 @@
           </label>
         </div>
 
-        <section class="identity" aria-labelledby="identity-title">
+        <section class="identity rm-identity" aria-labelledby="identity-title">
           <h2 id="identity-title">Identificação</h2>
-          <div class="info-row two-columns">
-            <label class="field">Nome completo <span class="optional">(opcional em link individualizado)</span>
-              <input id="name" name="name" type="text" autocomplete="name" maxlength="120" placeholder="Ex.: Flávia Almeida">
+          <div class="info-row rm-identity-grid">
+            <label class="field rm-field"><span>Nome completo</span>
+              <input id="name" name="name" type="text" autocomplete="name" maxlength="120" required>
             </label>
+            <label class="field rm-field"><span>Data de nascimento</span>
+              <input id="birth-date" name="birth_date" type="date" required>
+            </label>
+            <label class="field rm-field"><span>Data de aplicação do rastreio</span>
+              <input id="application-date" name="application_date" type="date" required>
+            </label>
+          </div>
+          <div class="info-row two-columns" style="margin-top:12px">
             <label class="field">Idade <span class="optional">(opcional)</span>
-              <input id="age" name="age" type="number" min="0" max="120" inputmode="numeric" placeholder="Ex.: 34">
+              <input id="age" name="age" type="number" min="0" max="120" inputmode="numeric">
             </label>
           </div>
         </section>
@@ -83,14 +92,15 @@
         </section>
 
         <div class="actions">
-          <button class="btn primary" type="submit" id="submit-assessment">Enviar respostas</button>
+          <button class="btn primary" type="submit" id="submit-assessment">Concluir rastreio</button>
           <button class="btn danger" type="button" id="reset">Limpar respostas</button>
         </div>
         <p id="form-status" class="form-status" aria-live="polite" aria-atomic="true"></p>
       </form>
     </main>
   </div>
-  <footer class="app-footer">© <span id="year"></span> Richelmy Murta, Psicólogo Clínico ® — ICAPS v<span id="version">2.0.0</span></footer>
+  <footer class="app-footer">© <span id="year"></span> Richelmy Murta, Psicólogo Clínico ® — versão do instrumento <span id="version">2.0.0</span></footer>
   <script type="module" src="./js/app.js"></script>
+  <script src="https://ricmurtapsicologia.github.io/plataforma.terapeutica/assets/js/screening-system-v2.js?v=2.0.0" defer></script>
 </body>
 </html>
