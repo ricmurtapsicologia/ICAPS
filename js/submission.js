@@ -10,6 +10,8 @@ export async function submitAssessment(definition, responses, identity = {}) {
     interpretationVersion: definition.meta.interpretationVersion,
     patientCode: String(identity.patientCode || '').trim(),
     name: String(identity.name || '').trim(),
+    birthDate: String(identity.birthDate || '').trim(),
+    applicationDate: String(identity.applicationDate || '').trim(),
     age: String(identity.age || '').trim(),
     website: String(identity.website || '').trim(),
     responses,
@@ -30,9 +32,7 @@ export async function submitAssessment(definition, responses, identity = {}) {
     });
 
     let data = null;
-    try {
-      data = await response.json();
-    } catch (_) {}
+    try { data = await response.json(); } catch (_) {}
 
     if (!response.ok || !data?.ok || data?.persisted !== true) {
       const code = data?.error || `HTTP_${response.status}`;
