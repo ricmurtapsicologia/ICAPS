@@ -1,0 +1,62 @@
+name: Finalize ICAPS v5
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/finalize-icaps-v5.yml']
+permissions: {contents: write}
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Consolidar um único hero e splash
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json
+          p=Path('index.html');s=p.read_text(encoding='utf-8')
+          name='ICAPS — Prontidão para Separação'
+          hero='https://ricmurtapsicologia.github.io/Inicio-de-Jornada-Terapeutica/assets/heroes/icaps.jpg?v=5.0.0'
+          s=re.sub(r'(?is)<title>.*?</title>',f'<title>{name}</title>',s,count=1)
+          for prop,val,attr in [('og:title',name,'property'),('og:image',hero,'property'),('twitter:title',name,'name'),('twitter:image',hero,'name')]:
+              pat=rf'(?is)<meta\b[^>]*?{attr}=["\']{re.escape(prop)}["\'][^>]*?>'
+              tag=f'<meta {attr}="{prop}" content="{val}">'
+              s,n=re.subn(pat,tag,s,count=1)
+              if not n:s=s.replace('</head>',tag+'\n</head>',1)
+          # importa somente o design compartilhado; preserva o backend próprio já testado do ICAPS.
+          css='<link rel="stylesheet" href="https://ricmurtapsicologia.github.io/Inicio-de-Jornada-Terapeutica/assets/screening-uniformity-v1.css?v=5.0.0">'
+          if 'screening-uniformity-v1.css?v=5.0.0' not in s:s=s.replace('</head>',css+'\n</head>',1)
+          s=s.replace('<body>','<body class="rm-screening-v2">',1)
+          # Remove hero, banner e introdução duplicados da versão anterior.
+          s=re.sub(r'(?is)\s*<header class="hero">.*?</header>','',s,count=1)
+          s=re.sub(r'(?is)\s*<figure class="banner-wrap">.*?</figure>','',s,count=1)
+          s=re.sub(r'(?is)\s*<section class="intro"[^>]*>.*?</section>','',s,count=1)
+          shell=f'''\n  <div id="rmClinicalSplash" role="status" aria-live="polite" aria-label="Abrindo rastreio clínico"><div class="rm-clinical-opening-card"><div class="rm-clinical-mark" aria-hidden="true">RM</div><p class="rm-clinical-opening-kicker">Richelmy Murta · Psicologia Clínica</p><h1>{name}</h1><p>Preparando o instrumento para preenchimento.</p><div class="rm-clinical-opening-loader" aria-hidden="true"></div></div></div>\n  <section class="rm-screening-shell" aria-labelledby="rm-screening-title"><div class="rm-screening-hero" data-rm-variant="icaps"><div class="rm-screening-copy"><p class="rm-eyebrow">Rastreio clínico · contexto conjugal</p><h1 id="rm-screening-title">{name}</h1><p class="rm-story">O instrumento organiza dimensões relevantes para reflexão clínica sobre a relação e a prontidão para mudança; não decide permanecer ou separar-se.</p></div><div class="rm-screening-visual"><img src="{hero}" alt="Sinalização de duas direções representando decisão e prontidão para mudança, sem retratos." loading="eager" decoding="async"></div></div><div class="rm-screening-body"><div class="rm-screening-intro"><div><h2>Antes de começar</h2><p>Responda considerando seu momento atual e o padrão real da relação. O resultado é dimensional e deve ser integrado ao contexto clínico.</p><div class="rm-clinical-note">Não constitui teste psicológico diagnóstico e não possui ponto de corte psicométrico validado para indicar uma decisão conjugal.</div></div><aside class="rm-onboarding"><h2>Como responder</h2><ol><li>Considere o relacionamento como ele está hoje.</li><li>Responda pelo que acontece de fato.</li><li>Não antecipe uma decisão final ao marcar as respostas.</li></ol></aside></div></div></section>\n'''
+          s=s.replace('<body class="rm-screening-v2">','<body class="rm-screening-v2">'+shell,1)
+          splash_js="""<script>(()=>{const s=document.getElementById('rmClinicalSplash');if(!s)return;setTimeout(()=>{s.classList.add('rm-splash-leaving');setTimeout(()=>s.remove(),320)},1850)})();</script>"""
+          s=s.replace('</body>',splash_js+'\n</body>',1)
+          p.write_text(s,encoding='utf-8')
+          # Atualiza o teste para o CTA canônico existente, mantendo a regra de não exibir resultado ao paciente.
+          t=Path('tests/scoring.test.mjs');x=t.read_text(encoding='utf-8').replace("assert.match(html, /Enviar respostas/i);","assert.match(html, /Concluir rastreio/i);")
+          t.write_text(x,encoding='utf-8')
+          Path('audits').mkdir(exist_ok=True)
+          Path('audits/visual-sanitize-v5.json').write_text(json.dumps({'version':'5.0.0','instrument':'icaps','canonicalName':name,'singleHero':True,'singleSplash':True,'localSubmissionPreserved':True,'patientFacingResults':False,'canonicalHero':hero},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+      - name: Regressão ICAPS
+        run: npm test
+      - name: Gate visual
+        run: |
+          set -euo pipefail
+          test "$(grep -o 'class="rm-screening-shell"' index.html | wc -l)" -eq 1
+          test "$(grep -o 'id="rmClinicalSplash"' index.html | wc -l)" -eq 1
+          ! grep -q '<header class="hero"' index.html
+          ! grep -q '<figure class="banner-wrap"' index.html
+          grep -q 'assets/heroes/icaps.jpg?v=5.0.0' index.html
+          grep -q '<title>ICAPS — Prontidão para Separação</title>' index.html
+      - name: Commit
+        run: |
+          rm -f .github/workflows/finalize-icaps-v5.yml .github/workflows/sanitize-screening-v5.yml
+          git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A; git diff --cached --quiet || git commit -m 'fix(icaps): hero único, splash canônica e QA verde v5'; git push
