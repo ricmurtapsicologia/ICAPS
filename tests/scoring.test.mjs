@@ -91,7 +91,7 @@ test('public page contains no patient-facing result or WhatsApp workflow', () =>
   assert.doesNotMatch(html, /Calcular resultado/i);
   assert.doesNotMatch(html, /Compartilhar resumo.*WhatsApp/i);
   assert.doesNotMatch(html, /id="results"/i);
-  assert.match(html, /Enviar respostas/i);
+  assert.match(html, /Concluir rastreio/i);
   assert.match(html, /aviso de privacidade/i);
 });
 

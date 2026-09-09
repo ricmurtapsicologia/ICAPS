@@ -1,0 +1,10 @@
+{
+  "version": "5.0.0",
+  "instrument": "icaps",
+  "canonicalName": "ICAPS — Prontidão para Separação",
+  "singleHero": true,
+  "singleSplash": true,
+  "localSubmissionPreserved": true,
+  "patientFacingResults": false,
+  "canonicalHero": "https://ricmurtapsicologia.github.io/Inicio-de-Jornada-Terapeutica/assets/heroes/icaps.jpg?v=5.0.0"
+}
